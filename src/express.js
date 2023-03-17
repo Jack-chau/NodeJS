@@ -1,12 +1,22 @@
 const express = require ( 'express' ) ;
 const app = express ( ) ;
+const mongoose = require ( 'mongoose' ) ;
+const Customer = require ( './models/customers' ) ;
 
-app.use ( express.json ( ) ) ;
+// Read .env file to set environment ( npm install dotenv )
+const dotenv = require ( 'dotenv' ) ;
+dotenv.config ( ) ;
+
+mongoose.set ( 'strictQuery', false ) ;
+
+app.use ( express.json( ) ) ;
 /* adding middleware which will be able to parse that data passed in through the body, 
     It will basically affect all of the requests coming in */
 app.use ( express.urlencoded( { extended : true } ) ) ;
 
-const PORT = 2000 ;
+// Read environment in terminal or 3000
+const PORT = process.env.PORT || 3000 ;
+
 const customers = [
     {
         "name" : "Caleb",
@@ -28,6 +38,7 @@ app.get ( '/', ( request, response ) => {
 } ) ;
 */
 
+/*
 app.get ( '/api/customers', ( req, res ) => { 
     res.send ( { "customers" :  customers } ) ;
 } ) ;
@@ -37,10 +48,44 @@ app.post ( '/', ( req, res ) => {
 } ) ;
 
 app.post ( '/api/customers', ( request, response ) => {
-    console.log ( request.body );
-    response.send ( request.body ) ; 
+    console.log ( request.body )
+    response.send ( "Here is reponse from the server"  )
 } ) ;
 
-app.listen ( PORT , ( ) => {
-    console.log ( "Server is running, port is: " + PORT ) ;
-} ) ;
+const start = async ( ) => {
+    try {
+        await mongoose.connect ( 'mongodb+srv://chaukaho:Jack123Jack123@cluster0.qazlmln.mongodb.net/?retryWrites=true&w=majority' ) ;
+
+        app.listen( PORT , ( ) => {
+            console.log ( "Server is running, port is: " + PORT ) ;
+        } ) ;
+    } catch ( error ) {
+        console.log ( error.message ) ;
+    }
+} ;
+*/ 
+// Create an object that defined from './models/customers'
+const customer = new Customer ( {
+    name : 'Jack',
+    industry : 'marketing',
+} ) ; 
+
+
+app.get ( '/', ( request, response ) => {
+    response.send ( customer ) ;
+} ) ; 
+
+const startGetCustomer = async ( ) => {
+    try {
+        await mongoose.connect ( 'mongodb+srv://chaukaho:Jack123Jack123@cluster0.qazlmln.mongodb.net/?retryWrites=true&w=majority' ) ;
+        app.listen ( PORT, ( ) => {
+            console.log ( "server is running, port is : " + PORT ) ;
+        } ) ;
+        await customer.save ( ) ;
+    } catch ( error ) {
+        console.log ( error.message ) ;
+    }
+} ;
+
+startGetCustomer ( ) ;
+
