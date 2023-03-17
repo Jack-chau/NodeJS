@@ -2,6 +2,7 @@ const express = require ( 'express' ) ;
 const app = express ( ) ;
 const mongoose = require ( 'mongoose' ) ;
 const Customer = require ( './models/customers' ) ;
+const Supplier = require ( './models/suppliers' ) ;
 
 // Read .env file to set environment ( npm install dotenv )
 const dotenv = require ( 'dotenv' ) ;
@@ -9,14 +10,14 @@ dotenv.config ( ) ;
 
 mongoose.set ( 'strictQuery', false ) ;
 
-app.use ( express.json( ) ) ;
+app.use ( express.json ( ) ) ;
 /* adding middleware which will be able to parse that data passed in through the body, 
     It will basically affect all of the requests coming in */
 app.use ( express.urlencoded( { extended : true } ) ) ;
 
 // Read environment in terminal or 3000
 const PORT = process.env.PORT || 3000 ;
-
+const CONNECT = process.env.CONNECT || 'mongodb+srv://chaukaho:Jack123Jack123@cluster0.qazlmln.mongodb.net/?retryWrites=true&w=majority' ;
 const customers = [
     {
         "name" : "Caleb",
@@ -63,29 +64,50 @@ const start = async ( ) => {
         console.log ( error.message ) ;
     }
 } ;
-*/ 
+*/
+
 // Create an object that defined from './models/customers'
 const customer = new Customer ( {
     name : 'Jack',
     industry : 'marketing',
 } ) ; 
 
+const supplier = new Supplier ( {
+    name : "BuildKing",
+    project : "Building Project",
+} ) ;
 
-app.get ( '/', ( request, response ) => {
-    response.send ( customer ) ;
+/*
+app.get ( '/api/customer', async( request, response ) => {
+    const result = await customers.find ( ) ;
+    response.send ( { "customer" : result } ) ;
 } ) ; 
-
+*/
 const startGetCustomer = async ( ) => {
     try {
-        await mongoose.connect ( 'mongodb+srv://chaukaho:Jack123Jack123@cluster0.qazlmln.mongodb.net/?retryWrites=true&w=majority' ) ;
+        await mongoose.connect ( CONNECT ) ;
         app.listen ( PORT, ( ) => {
             console.log ( "server is running, port is : " + PORT ) ;
         } ) ;
-        await customer.save ( ) ;
+        await customer.save ( ) ; //  The location where const customer will be save was defined inside customers.js (module.exports)
+        await supplier.save ( ) ;
     } catch ( error ) {
         console.log ( error.message ) ;
     }
 } ;
 
-startGetCustomer ( ) ;
+/*
+const getSupplier = async ( ) => {
+    try {
+        await mongoose.connect ( CONNECT ) ;
+        app.listen ( PORT, ( ) => {
+            console.log ( "The server is running on PORT: " + PORT ) ;
+        } ) ;
+        await supplier.save ( ) ;
+    } catch ( error ) {
+        console.log ( error.message ) ;
+    }
+} ;
+*/
 
+startGetCustomer ( ) ;
