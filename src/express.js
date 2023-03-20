@@ -85,7 +85,7 @@ const supplier = new Supplier( {
     project : "Building Project",
 } ) ;
 
-// Conenct to the database
+// Conencting to the database
 const startServer = async( ) => {
     try {
         await mongoose.connect( CONNECT ) ;
@@ -139,5 +139,14 @@ app.post( '/api/customers', async( request, response ) => {
     } catch( error ) {
         response.status( 400 ).json( { "error" : error.message } ) ; // if error, server status = bad request (400)
     }
-
 } ) ;
+
+//  Accept id passed on postman, setup id endpoint
+// For example: user have some request, have to have second variable /:userQuestion 
+// http://localhost:3005/api/customers/641822cac94afadf20042d43/test?age=50&state=ohio --> the question is age=50 and state=ohio?
+app.get( '/api/customers/:id/:userQuestion', async( request, response ) => {
+    response.json( { "requestParams" : request.params ,
+                     "requestQuery" : request.query , 
+                    } ) ;
+
+} ) ; // : means variable that require user going to pass
