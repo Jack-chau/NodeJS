@@ -3,7 +3,10 @@ const mongoose = require ( 'mongoose' ) ;
 
 // 1. Create a schema, look like a class
 const customerSchema = new mongoose.Schema ( {
-    name : String ,
+    name : {
+        type : String,
+        required : true // must input name
+    },
     industry : String
 } ) ;
 
