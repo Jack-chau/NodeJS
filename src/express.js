@@ -141,12 +141,41 @@ app.post( '/api/customers', async( request, response ) => {
     }
 } ) ;
 
-//  Accept id passed on postman, setup id endpoint
-// For example: user have some request, have to have second variable /:userQuestion 
-// http://localhost:3005/api/customers/641822cac94afadf20042d43/test?age=50&state=ohio --> the question is age=50 and state=ohio?
+// Accept id passed on postman, setup id endpoint
+/* For example: user have some request, have to have second variable /:userQuestion 
+http://localhost:3005/api/customers/641822cac94afadf20042d43/userQuestion?age=50&state=ohio --> the question is age=50 and state=ohio? */
+/*
 app.get( '/api/customers/:id/:userQuestion', async( request, response ) => {
     response.json( { "requestParams" : request.params ,
                      "requestQuery" : request.query , 
                     } ) ;
-
 } ) ; // : means variable that require user going to pass
+*/
+
+// Get specific items from mongoDB with a filter( customer.params.id ) and return to user:
+app.get( '/api/customers/:id', async( request, response ) => {
+    try {
+        console.log( {
+            requestParams : request.params,
+            requestQuery : request.query
+        } ) ;
+        const { id : customerID } = request.params ; // same as const customerID = request.params.id -- this is call destructureuing;
+        console.log ( "Your request id is: " + customerID ) ;
+        // retrive data from mongoDB
+        const customer = await Customer.findById ( customerID ) ; //retrive data from mongoDB
+        if( !customer ) {
+            response.status( 404 ).json( { // 404 is not found
+                error : "User not found",
+            } ) ;
+        } else {
+            response.json( { customer } ) ;
+        } ;
+        response.json( {
+            "customer id" : customer.id ,
+            "customer name" : customer.name ,
+        } ) ;
+    } catch( error ) {
+        response.status( 500 ).json( { error: "something wrong" } ) ; //500 is internal server error
+    }
+} ) ;
+
