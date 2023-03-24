@@ -31,7 +31,8 @@ const customers = [
         "name" : "Sal",
         "industry" : "sport medicient"
     }
-]
+] ;
+
 // End point( PATH, function ) req = request, res = response
 /*
 app.get ( '/', ( request, response ) => {
@@ -67,6 +68,7 @@ const start = async( ) => {
 */
 
 // Create an object that defined from './models/customers'
+/*
 const customer = new Customer( {
     id : 1,
     name : 'Jack',
@@ -78,6 +80,7 @@ const customer = new Customer( {
         industry : "IT",
     },
 ) ; 
+*/
 
 const supplier = new Supplier( {
     id : 1,
@@ -90,7 +93,7 @@ const startServer = async( ) => {
     try {
         await mongoose.connect( CONNECT ) ;
         app.listen ( PORT, ( ) => {
-            console.log ( "server is running, port is : " + PORT ) ;
+            console.log( "server is running, port is : " + PORT ) ;
         } ) ;
 // if you run twice, .save will save two data to the database
 //        await customer.save ( ) ; //  The location where const customer will be save was defined inside customers.js (module.exports)
@@ -102,42 +105,66 @@ const startServer = async( ) => {
 
 startServer( ) ;
 
-// GET ( read data from mongoDB ) ( using async function )
-// Step 1: Get data from mongoDB ( request for asking data from the frontend, server receive the request then give response )
-app.get( '/api/customers', async( request, response ) => {
-    console.log ( await mongoose.connection.db.listCollections( ).toArray( ) ) ; // console.log all JSON data from mongooseDB collection
-    try {
-        const customerResult = await Customer.find( ) ; // .find to grep everything without filter ( Customer is the Schema we created before!)
-        const supplierResult = await Supplier.find( ) ;
-        // If you want two data response back, you have match the same JSON format
-        response.send( { "customer" : customerResult,
-                         "supplier" : supplierResult } ) ; // send ^result^ on postman
-    } catch( error ) {
-        response.status( 500 ).json( { "error" : error.message } ) ; // 500 is Internal Server Error ( HTTP status code registry )
-    }
-} ) ;
-// Step 2: Check data from Postman
-
 app.get( '/', async( request, response ) => { 
     response.send( 'Welcome' ) ;
 } ) ;
 
+// GET ( read data from mongoDB ) ( using async function )
+// Step 1: Get data from mongoDB ( request for asking data from the frontend, server receive the request then give response )
+app.get( '/api/customers', async( request, response ) => {
+//    console.log( await mongoose.connection.db.listCollections( ).toArray( ) ) ; // shows all collections in mongooseDB in console
+    try {
+        const customerResult = await Customer.find( ) ; // .find adopted to grep everything without a filter ( Customer is a Schema we created before! )
+        // If you want two data response back, you have match the same JSON format
+        response.send( { "customer" : customerResult } ) ; // send ^result^ on postman
+    } catch( error ) {
+        response.status( 500 ).json( { "error" : error.message } ) ; // 500 is Internal Server Error ( HTTP status code registry )
+    }
+} ) ;
+
+// For supplier
+app.get( '/api/suppliers', async( request, response ) => {
+    try {
+        const supplierResult = await Supplier.find( ) ;
+        response.send( { "Supplier" : supplierResult } ) ;
+        return ;
+    } catch( error ) {
+        response.status( 500 ).json( { "error" : error.message } ) ;
+        return ;
+    }
+} ) ;
+
+// Step 2: Check data from Postman
 // POST ( post new items to the database )
 // User send request from frontend, then server give response.
 app.post( '/api/customers', async( request, response ) => {
     console.log( request.body ) ; // check request's body user input from the frontend
-    /*  
+/*  
     const customer = new Customer( {
         "name" : request.body.name,  // we are posting data to the database from the frontend, that's why requst.body.name, reqest for user's input
         "industry" : request.body.industry
-        */  
+*/  
        const customer = new Customer( request.body ) ; // for simplicity, post the whold body to the database
        //Be careful, the customer JSON will follow the Customer schema that created in customer.js, 
-       try {
+       try{
             await customer.save( ) ;
             response.status( 201 ).json( { "customer" : customer } ) ; // check server's status, 201 means "created"
     } catch( error ) {
         response.status( 400 ).json( { "error" : error.message } ) ; // if error, server status = bad request (400)
+    }
+} ) ;
+
+// Update supplier collection in mongoose Atlas
+app.post( '/api/suppliers', async( request, response ) => {
+    console.log( request.body ) ;
+    const supplier = new Supplier( request.body ) ;
+    try{ 
+        await supplier.save( ) ;
+        response.status( 201 ).json( { "supplier" : supplier } ) ;
+        return ;
+    } catch( error ) {
+        response.status( 400 ).json( { "error" : error.message } ) ;
+        return ;
     }
 } ) ;
 
@@ -155,27 +182,70 @@ app.get( '/api/customers/:id/:userQuestion', async( request, response ) => {
 // Get specific items from mongoDB with a filter( customer.params.id ) and return to user:
 app.get( '/api/customers/:id', async( request, response ) => {
     try {
+/*
         console.log( {
             requestParams : request.params,
             requestQuery : request.query
         } ) ;
-        const { id : customerID } = request.params ; // same as const customerID = request.params.id -- this is call destructureuing;
-        console.log ( "Your request id is: " + customerID ) ;
+*/
+        const { id : customerId } = request.params ; // same as const customerID = request.params.id -- this is call destructureuing;
+        console.log( "Your request id is: " + customerId ) ;
         // retrive data from mongoDB
-        const customer = await Customer.findById ( customerID ) ; //retrive data from mongoDB
+        const customer = await Customer.findById( customerId ) ; //retrive data from mongoDB
+        // retrive data from database, if not a customer, then user not found.
         if( !customer ) {
-            response.status( 404 ).json( { // 404 is not found
-                error : "User not found",
-            } ) ;
+            response.status( 404 ).json( { error : "User not found", } ) ; // 404 is not found
+            return ; // stop further execution in this callback
         } else {
             response.json( { customer } ) ;
+            return ;// stop further execution in this callback
         } ;
-        response.json( {
-            "customer id" : customer.id ,
-            "customer name" : customer.name ,
-        } ) ;
+
     } catch( error ) {
         response.status( 500 ).json( { error: "something wrong" } ) ; //500 is internal server error
+        response.status( 490 ).json( { error: "A critical system health error requires the system to be shut down!, remember to add return in loop. " } ) ;
     }
 } ) ;
 
+// Get supplier with id filter
+app.get( '/api/suppliers/:id', async( request, response ) => {
+    try{ 
+        const { id : supplierId } = request.params ;
+        console.log( 'Your request id is: ' + supplierId ) ;
+        const supplier = await Supplier.findById( supplierId ) ;
+        if( !supplierId ) { 
+            response.status( 404 ).json( { error : "User not found" } ) ;
+            return ;
+        } else {
+            response.json( { supplier } ) ;
+            return ;
+        } ;
+    } catch( error ) {
+        response.status( 500 ).json( { error : "something go wrong" } ) ;
+        response.status( 490 ).json( { error : "A critical system health error requires the system to be shut down, remember add return"} )
+    }
+} ) ;
+
+// Updating database, post and put. 
+// Create an endpoint to update the database.
+// *** use put to update the database
+
+app.put( '/api/customers/:id', async( request, response ) => {
+    const customerId = request.params.id ; 
+    // call .replaceOne method, .replaceOne( filter, new update data)
+    const result = await Customer.replaceOne( { _id : customerId }, request.body ) ; // we search customer's id and replace it's body, means update a customer's information
+    console.log( result ) ;
+    response.json( { updatedCount : result.modifiedCount } ) ;
+} ) ;
+
+// Update supplier data by its id: 
+app.put( '/api/suppliers/:id', async( request, response ) => {
+    try{ 
+        const { id : supplierId } = request.params ;
+        const result = await Supplier.replaceOne( { _id : supplierId }, request.body ) ;
+        console.log( result ) ;
+        response.json( { updatedCount : result.modifiedCount } ) ;
+    } catch ( error ) {
+        response.status( 500 ).json( { error : "something go wrong" } ) ;
+    }
+} ) ;
