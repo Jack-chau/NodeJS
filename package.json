@@ -4,12 +4,12 @@
   "description": "",
   "main": "src/app.js",
   "scripts": {
-    "start": "npx nodemon ./src/app.js",
-    "express": "npx nodemon ./src/express.js"
+    "start": "npx nodemon ./src/app.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "mongoose": "^7.0.1",
